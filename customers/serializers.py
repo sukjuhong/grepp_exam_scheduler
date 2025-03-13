@@ -7,7 +7,11 @@ from customers.models import Customer
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        exclude = ['password']
+        fields = '__all__'
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'last_login': {'read_only': True},
+        }
 
 
 class CustomerTokenObtainPairSerializer(TokenObtainPairSerializer):
