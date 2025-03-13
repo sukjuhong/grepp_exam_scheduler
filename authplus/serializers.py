@@ -12,13 +12,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         fields = ('refreshToken', 'accessToken')
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        super().validate(attrs)
         refresh = self.get_token(self.user)
-        data.update({
+        return {
             'refreshToken': str(refresh),
-            'accessToken': str(refresh.access_token)
-        })
-        return data
+            'accessToken': str(refresh.access_token),
+        }
 
 
 class CustomTokenObtainPairSerializerWithCustomer(TokenObtainPairSerializer):
@@ -30,11 +29,10 @@ class CustomTokenObtainPairSerializerWithCustomer(TokenObtainPairSerializer):
         fields = ('refreshToken', 'accessToken', 'customer')
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        super().validate(attrs)
         refresh = self.get_token(self.user)
-        data.update({
+        return {
             'refreshToken': str(refresh),
             'accessToken': str(refresh.access_token),
             'customer': CustomerSerializer(self.user).data
-        })
-        return data
+        }
