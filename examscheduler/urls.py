@@ -17,12 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
 from rest_framework.routers import DefaultRouter
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 
+from authplus.views import CustomTokenObtainPairView, CustomTokenRefreshView
 from customers.views import CustomerViewSet
 
 router = DefaultRouter()
@@ -34,8 +32,11 @@ router.register(r'api/customers', CustomerViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/auth/login/', TokenObtainPairView.as_view(),
+    path('api/auth/login/', CustomTokenObtainPairView.as_view(),
          name='token_obtain_pair'),
-    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
+    path('api/docs/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/',
+         SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 urlpatterns += router.urls
