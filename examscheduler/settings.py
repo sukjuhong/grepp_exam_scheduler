@@ -141,7 +141,6 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
-    "ROTATE_REFRESH_TOKENS": True,
     "TOKEN_OBTAIN_SERIALIZER": "auth.serializers.CustomTokenObtainPairSerializer",
 }
 

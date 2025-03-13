@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from authplus.views import CustomTokenObtainPairView, CustomTokenRefreshView
 from customers.views import CustomerViewSet
@@ -37,6 +37,6 @@ urlpatterns = [
     path('api/auth/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('api/docs/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/',
-         SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+         SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
 urlpatterns += router.urls

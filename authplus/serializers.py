@@ -1,26 +1,29 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
 from customers.serializers import CustomerSerializer
 
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    refreshToken = serializers.CharField(read_only=True)
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    refresh = None
+    access = None
+    refreshToken = serializers.CharField(write_only=True)
     accessToken = serializers.CharField(read_only=True)
 
     class Meta:
         fields = ('refreshToken', 'accessToken')
 
     def validate(self, attrs):
-        super().validate(attrs)
-        refresh = self.get_token(self.user)
+        attrs = {
+            'refresh': attrs.get('refreshToken')
+        }
+        data = super().validate(attrs)
         return {
-            'refreshToken': str(refresh),
-            'accessToken': str(refresh.access_token),
+            'accessToken': data['access']
         }
 
 
-class CustomTokenObtainPairSerializerWithCustomer(TokenObtainPairSerializer):
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     refreshToken = serializers.CharField(read_only=True)
     accessToken = serializers.CharField(read_only=True)
     customer = CustomerSerializer(read_only=True)
