@@ -25,6 +25,18 @@
 			"settings": {
 				"python.languageServer": "Pylance",
 				"python.analysis.autoImportCompletions": true,
+				"python.analysis.packageIndexDepths": [
+					{
+						"name": "django",
+						"depth": 10,
+						"includeAllSymbols": true
+					},
+					{
+						"name": "rest_framework",
+						"depth": 10,
+						"includeAllSymbols": true
+					}
+				],
 				"[python]": {
 					"editor.defaultFormatter": "ms-python.autopep8",
 					"editor.formatOnSave": true

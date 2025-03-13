@@ -6,8 +6,6 @@ class CustomerManager(BaseUserManager):
     def create_user(self, company_name: str, password: str = None):
         if not company_name:
             raise ValueError("must have company name")
-        if not password:
-            raise ValueError("must have password")
 
         user = self.model(
             company_name=company_name
