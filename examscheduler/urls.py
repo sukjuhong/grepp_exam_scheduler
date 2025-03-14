@@ -26,15 +26,18 @@ from customers.views import CustomerViewSet
 router = DefaultRouter()
 router.register(r'api/customers', CustomerViewSet)
 
-
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
     path('api/auth/login/', CustomTokenObtainPairView.as_view(),
          name='token_obtain_pair'),
     path('api/auth/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
+
+    path('api/reservations/', include('reservations.urls')),
+
     path('api/docs/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/',
          SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

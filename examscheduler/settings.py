@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "authplus",
     "customers",
+    "reservations",
     "rest_framework",
     "rest_framework_simplejwt",
     'drf_spectacular',
