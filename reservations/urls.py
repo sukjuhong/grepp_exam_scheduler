@@ -1,6 +1,6 @@
 from django.urls import path
 
-from reservations.views import ReservationView
+from reservations.views import ReservationAvailableSlotsView, ReservationConfirmView, ReservationView
 
 
 urlpatterns = [
@@ -11,7 +11,7 @@ urlpatterns = [
              {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
          name='reservation-detail'),
     path('<uuid:pk>/confirm/',
-         ReservationView.as_view({'post': 'confirm'}), name='reservation-confirm'),
+         ReservationConfirmView.as_view(), name='reservation-confirm'),
     path('available-slots/',
-         ReservationView.as_view({'get': 'available_slots'}), name='reservation-available-slots'),
+         ReservationAvailableSlotsView.as_view(), name='reservation-available-slots'),
 ]

@@ -12,7 +12,7 @@ def is_date_within_three_to_fifteen_days_from_today(date: datetime.time) -> bool
 
 
 class ReservationSerializer(serializers.ModelSerializer):
-    customer = serializers.PrimaryKeyRelatedField(read_only=True)
+    customer = serializers.StringRelatedField(read_only=True)
     status_display = serializers.CharField(
         source='get_status_display', read_only=True)
 
@@ -51,3 +51,12 @@ class ReservationSerializer(serializers.ModelSerializer):
         ):
             raise serializers.ValidationError('예약 가능한 인원 수를 초과했습니다.')
         return attrs
+
+
+class ReservationSlotSerializer(serializers.Serializer):
+    """
+    슬롯 정보를 직렬화하는 Serializer
+    """
+    start_time = serializers.TimeField()
+    end_time = serializers.TimeField()
+    remaining = serializers.IntegerField()

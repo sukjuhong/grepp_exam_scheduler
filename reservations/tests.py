@@ -1,3 +1,5 @@
+import datetime
+import re
 from typing import cast
 from django.urls import reverse
 from django.utils.timezone import now
@@ -395,7 +397,13 @@ class ReservationAPITestCase(APITestCase):
         self.assertIn('remaining', response.data[0])
 
         for slot in response.data:
-            slot = cast(Slot, slot)
+            slot = Slot(
+                start_time=datetime.datetime.strptime(
+                    slot['start_time'], '%H:%M:%S').time(),
+                end_time=datetime.datetime.strptime(
+                    slot['end_time'], '%H:%M:%S').time(),
+                remaining=cast(int, slot['remaining'])
+            )
             if is_slot_in_reservation(slot, reservation):
                 self.assertEqual(
                     slot['remaining'], RESERVATION_NUM_OF_PARTICIPANTS_LIMIT - reservation.num_of_participants)
