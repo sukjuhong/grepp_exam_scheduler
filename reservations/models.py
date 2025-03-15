@@ -1,9 +1,16 @@
+import logging
 import uuid
+from django.core.cache import cache
 from django.db import models
 from django.core.exceptions import ValidationError
-from datetime import time
+
+from django.db.models.signals import post_delete, post_save, pre_save
+from django.dispatch import receiver
+
 
 RESERVATION_NUM_OF_PARTICIPANTS_LIMIT = 50000
+
+logger = logging.getLogger(__name__)
 
 
 class ReservationStatus(models.TextChoices):
@@ -56,10 +63,13 @@ class Reservation(models.Model):
         super().save(*args, **kwargs)
 
     @staticmethod
-    def confirmed_num_of_participants_in_time_range(date, start_time, end_time):
-        return Reservation.objects.filter(
+    def confirmed_num_of_participants_in_time_range(date, start_time, end_time, exclude_reservation=None):
+        reservations = Reservation.objects.filter(
             date=date,
             start_time__lt=end_time,
             end_time__gt=start_time,
             status=ReservationStatus.CONFIRMED
-        ).aggregate(models.Sum('num_of_participants'))['num_of_participants__sum'] or 0
+        )
+        if exclude_reservation:
+            reservations = reservations.exclude(id=exclude_reservation.id)
+        return reservations.aggregate(models.Sum('num_of_participants'))['num_of_participants__sum'] or 0

@@ -9,6 +9,7 @@ if [ ! -f "$ENV_FILE" ]; then
 
     cat <<EOL > "$ENV_FILE"
 DEBUG=True
+DJANGO_LOG_LEVEL=DEBUG
 SECRET_KEY="+95BenWFBR+NXnzlaPSo50XDXhMhFQt15SdRjiULonutBv1kGjxBxBzPe/b42uPIWSxPzfxu5nb2aszqQxBxQw=="
 DATABASE_URL=psql://postgres:postgres@localhost:5432/examscheduler
 

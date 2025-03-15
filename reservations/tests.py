@@ -1,6 +1,7 @@
 import datetime
 import re
 from typing import cast
+from unittest.mock import patch
 from django.urls import reverse
 from django.utils.timezone import now
 from rest_framework.test import APITestCase
@@ -8,7 +9,7 @@ from rest_framework import status
 from datetime import time, timedelta
 
 from customers.models import Customer
-from reservations.views import Slot, is_slot_in_reservation
+from reservations.utils import Slot, is_slot_in_reservation
 from .models import RESERVATION_NUM_OF_PARTICIPANTS_LIMIT, Reservation, ReservationStatus
 
 
@@ -186,6 +187,35 @@ class ReservationAPITestCase(APITestCase):
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_do_updating_confirmed_reservation_delete_cache(self):
+        """
+        어드민이 확정 된 예약 수정 시 캐시를 삭제하는지 확인
+        """
+        self.authenticate(self.admin_customer)
+        reservation = self.create_reservation(self.normal_customer)
+        old_reservation_date = reservation.date
+        reservation.status = ReservationStatus.CONFIRMED
+        reservation.save()
+        reservation.refresh_from_db()
+
+        with patch('django.core.cache.cache.delete') as mock_delete:
+            url = reverse('reservation-detail', args=[reservation.id])
+            data = {
+                "title": "변경된 테스트 시험",
+                "date": (now() + timedelta(days=8)).date().isoformat(),
+                "start_time": time(hour=10, minute=0, second=0).strftime('%H:%M:%S'),
+                "end_time": time(hour=12, minute=0, second=0).strftime('%H:%M:%S'),
+                "num_of_participants": RESERVATION_NUM_OF_PARTICIPANTS_LIMIT // 2
+            }
+
+            response = self.client.put(url, data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(mock_delete.call_count, 2)
+            mock_delete.assert_any_call(
+                f'available_slots:{old_reservation_date.isoformat()}')
+            mock_delete.assert_any_call(
+                f'available_slots:{reservation.date.isoformat()}')
+
     def test_user_cannot_update_other_customer_reservation(self):
         """
         다른 고객의 예약을 수정할 수 없는지 확인
@@ -207,7 +237,7 @@ class ReservationAPITestCase(APITestCase):
 
     def test_user_cannot_update_confirmed_reservation(self):
         """
-        확정된 예약을 수정할 수 없는지 확인
+        고객이 확정된 예약을 수정할 수 없는지 확인
         """
         self.authenticate(self.normal_customer)
         reservation = self.create_reservation(self.normal_customer)
@@ -242,6 +272,23 @@ class ReservationAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(reservation.status, ReservationStatus.CONFIRMED)
 
+    def test_do_cofirming_reservation_delete_cache(self):
+        """
+        예약 확정 시 캐시를 삭제하는지 확인
+        """
+        self.authenticate(self.admin_customer)
+        reservation = self.create_reservation(self.normal_customer)
+
+        with patch('django.core.cache.cache.delete') as mock_delete:
+            url = reverse('reservation-confirm', args=[reservation.id])
+            response = self.client.post(url)
+            reservation.refresh_from_db()
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(reservation.status, ReservationStatus.CONFIRMED)
+            mock_delete.assert_any_call(
+                f'available_slots:{reservation.date.isoformat()}')
+
     def test_user_cannot_confirm_reservation(self):
         """
         고객이 예약을 확정할 수 없는지 확인
@@ -265,6 +312,23 @@ class ReservationAPITestCase(APITestCase):
         url = reverse('reservation-detail', args=[reservation.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_do_deleting_confirmed_reservation_delete_cache(self):
+        """
+        어드민이 확정된 예약 삭제 시 캐시를 삭제하는지 확인
+        """
+        self.authenticate(self.admin_customer)
+        reservation = self.create_reservation(self.normal_customer)
+        reservation.status = ReservationStatus.CONFIRMED
+        reservation.save()
+        reservation.refresh_from_db()
+
+        with patch('django.core.cache.cache.delete') as mock_delete:
+            url = reverse('reservation-detail', args=[reservation.id])
+            response = self.client.delete(url)
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+            mock_delete.assert_called_once_with(
+                f'available_slots:{reservation.date.isoformat()}')
 
     def test_user_can_delete_pending_reservation(self):
         """
@@ -407,6 +471,34 @@ class ReservationAPITestCase(APITestCase):
             if is_slot_in_reservation(slot, reservation):
                 self.assertEqual(
                     slot['remaining'], RESERVATION_NUM_OF_PARTICIPANTS_LIMIT - reservation.num_of_participants)
+
+    def test_caching_available_slots(self):
+        """
+        예약 가능한 시간대 목록을 캐싱하여 빠르게 조회할 수 있는지 확인
+        첫 조회 시 캐싱되고, (mock_get.call_count == 1, mock_set.call_count == 1)
+        두 번째 조회 시 캐싱된 데이터를 사용하는지 확인 (mock_get.call_count == 2, mock_set.call_count == 1)
+        """
+        self.authenticate(self.normal_customer)
+        reservation = self.create_reservation(self.normal_customer)
+        reservation.status = ReservationStatus.CONFIRMED
+        reservation.save()
+
+        with patch('django.core.cache.cache.get') as mock_get, patch('django.core.cache.cache.set') as mock_set:
+            mock_get.return_value = None
+            url = reverse('reservation-available-slots')
+            response = self.client.get(
+                url + f'?date={reservation.date.isoformat()}', format="json")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            mock_get.assert_called_once_with(
+                f'available_slots:{reservation.date.isoformat()}')
+            mock_set.assert_called_once()
+
+            mock_get.return_value = response.data
+            response = self.client.get(
+                url + f'?date={reservation.date.isoformat()}', format="json")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(mock_get.call_count, 2)
+            self.assertEqual(mock_set.call_count, 1)
 
     def test_failed_available_slots_with_invalid_date(self):
         """

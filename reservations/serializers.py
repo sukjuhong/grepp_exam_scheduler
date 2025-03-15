@@ -46,7 +46,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 
         if (
             Reservation.confirmed_num_of_participants_in_time_range(
-                attrs['date'], attrs['start_time'], attrs['end_time']) +
+                attrs['date'], attrs['start_time'], attrs['end_time'], exclude_reservation=self.instance) +
             attrs['num_of_participants'] > RESERVATION_NUM_OF_PARTICIPANTS_LIMIT
         ):
             raise serializers.ValidationError('예약 가능한 인원 수를 초과했습니다.')

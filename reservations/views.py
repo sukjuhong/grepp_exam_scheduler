@@ -1,23 +1,23 @@
 import datetime
-from typing import List, Optional
-from urllib import request
+import logging
 from uuid import UUID
 
-from rest_framework import generics, pagination, permissions, viewsets, status
-from rest_framework.decorators import action
+from django.core.cache import cache
+
+from rest_framework import generics, permissions, viewsets, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
-from rest_framework.routers import APIRootView
-from rest_framework.views import APIView
 
 from customers.models import Customer
 from customers.permissions import IsOwnerOrAdmin
 from reservations.models import RESERVATION_NUM_OF_PARTICIPANTS_LIMIT, Reservation, ReservationStatus
 from reservations.serializers import ReservationSerializer, ReservationSlotSerializer, is_date_within_three_to_fifteen_days_from_today
-from reservations.utils import Slot, get_available_slots, is_slot_in_reservation
+from reservations.utils import get_available_slots, is_slot_in_reservation
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema_view(
@@ -77,30 +77,49 @@ class ReservationView(viewsets.ModelViewSet):
             raise ValidationError('확정된 예약은 수정/삭제할 수 없습니다.')
 
     def update(self, request, *args, **kwargs):
+        reservation = self.get_object()
         try:
             self.validate_modification(
-                reservation=self.get_object(), customer=self.request.user
+                reservation=reservation, customer=request.user
             )
         except ValidationError as err:
             return Response({'error': err.get_full_details()}, status=403)
+
+        if reservation.status == ReservationStatus.CONFIRMED:
+            logger.debug(
+                f"clearing cache for date {reservation.date}, {request.data.get('date')}")
+            cache.delete(f"available_slots:{reservation.date}")
+            cache.delete(f"available_slots:{request.data.get('date')}")
         return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
+        reservation = self.get_object()
         try:
             self.validate_modification(
-                reservation=self.get_object(), customer=self.request.user
+                reservation=reservation, customer=request.user
             )
         except ValidationError as err:
             return Response({'error': err.get_full_details()}, status=403)
+
+        if reservation.status == ReservationStatus.CONFIRMED:
+            logger.debug(
+                f"clearing cache for date {reservation.date}, {request.data.get('date')}")
+            cache.delete(f"available_slots:{reservation.date}")
+            cache.delete(f"available_slots:{request.data.get('date')}")
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
+        reservation = self.get_object()
         try:
             self.validate_modification(
-                reservation=self.get_object(), customer=self.request.user
+                reservation=reservation, customer=request.user
             )
         except ValidationError as err:
             return Response({'error': err.get_full_details()}, status=403)
+
+        if reservation.status == ReservationStatus.CONFIRMED:
+            logger.debug(f"clearing cache for date {reservation.date}")
+            cache.delete(f"available_slots:{reservation.date}")
         return super().destroy(request, *args, **kwargs)
 
 
@@ -122,6 +141,9 @@ class ReservationConfirmView(generics.GenericAPIView):
         reservation = self.get_object()
         reservation.status = ReservationStatus.CONFIRMED
         reservation.save(update_fields=['status'])
+
+        logger.debug(f"clearing cache for date {reservation.date}")
+        cache.delete(f"available_slots:{reservation.date}")
         return Response(self.get_serializer(reservation).data, status=status.HTTP_200_OK)
 
 
@@ -164,10 +186,27 @@ class ReservationAvailableSlotsView(generics.GenericAPIView):
         return date
 
     def get(self, request: Request) -> Response:
+        """예약 가능 시간 조회
+
+        캐시된 예약 가능 시간을 반환하거나, 새로 계산하여 반환합니다.
+        캐시는 확정된 예약이 생성/수정/삭제될 때마다 갱신됩니다.
+
+        See Also:
+            - reservations.utils.get_available_slots
+            - reservations.utils.is_slot_in_reservation
+            - reservations.models.Reservation.clear_reservation_cache_on_save
+        """
         try:
             date = self.validate_date_param(request.query_params.get('date'))
         except ValidationError as err:
             return Response({'error': err.get_full_details()}, status=400)
+
+        cache_key = f"available_slots:{date}"
+        cached_slots = cache.get(cache_key)
+
+        if cached_slots:
+            logger.debug(f"retuning cached slots for date {date}")
+            return Response(cached_slots, status=200)
 
         slots = get_available_slots()
         reservations = Reservation.objects.filter(
@@ -178,5 +217,8 @@ class ReservationAvailableSlotsView(generics.GenericAPIView):
                 if is_slot_in_reservation(slot, reservation):
                     slot['remaining'] = max(
                         0, slot['remaining'] - reservation.num_of_participants)
+
+        cache.set(cache_key, ReservationSlotSerializer(
+            slots, many=True).data, timeout=60*60)
 
         return Response(ReservationSlotSerializer(slots, many=True).data, status=200)
