@@ -20,7 +20,7 @@ class CustomerAPITestCase(APITestCase):
         """
         회원가입을 성공적으로 진행하는 경우
         """
-        url = reverse('customer-list')
+        url = reverse('customers')
         data = {
             "company_name": "sktelecom",
             "password": "sktelecom123",
@@ -38,7 +38,7 @@ class CustomerAPITestCase(APITestCase):
         """
         이미 존재하는 회사명으로 회원가입을 시도하는 경우
         """
-        url = reverse('customer-list')
+        url = reverse('customers')
         data = {
             "company_name": "programmers",
             "password": "",
@@ -55,7 +55,7 @@ class CustomerAPITestCase(APITestCase):
         """
         어드민이 아닌 사용자가 고객 등록을 시도하는 경우
         """
-        url = reverse('customer-list')
+        url = reverse('customers')
         data = {
             "company_name": "naver",
             "password": "",
@@ -72,7 +72,7 @@ class CustomerAPITestCase(APITestCase):
         """
         고객 리스트를 조회하는 경우
         """
-        url = reverse('customer-list')
+        url = reverse('customers')
 
         self.client.force_login(self.admin_customer)
         response = self.client.get(url)

@@ -17,14 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from authplus.views import CustomTokenObtainPairView, CustomTokenRefreshView
-from customers.views import CustomerViewSet
 
-router = DefaultRouter()
-router.register(r'api/customers', CustomerViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
@@ -36,10 +32,10 @@ urlpatterns = [
          name='token_obtain_pair'),
     path('api/auth/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
 
+    path('api/customers/', include('customers.urls')),
     path('api/reservations/', include('reservations.urls')),
 
     path('api/docs/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/',
          SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
-urlpatterns += router.urls
