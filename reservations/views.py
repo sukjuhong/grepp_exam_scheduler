@@ -14,7 +14,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiPara
 from customers.models import Customer
 from customers.permissions import IsOwnerOrAdmin
 from reservations.models import RESERVATION_NUM_OF_PARTICIPANTS_LIMIT, Reservation, ReservationStatus
-from reservations.serializers import ReservationSerializer, ReservationSlotSerializer, is_date_within_three_to_fifteen_days_from_today
+from reservations.serializers import ReservationConfirmSerializer, ReservationSerializer, ReservationSlotSerializer, is_date_within_three_to_fifteen_days_from_today
 from reservations.utils import get_available_slots, is_slot_in_reservation
 
 logger = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class ReservationView(viewsets.ModelViewSet):
                 reservation=reservation, customer=request.user
             )
         except ValidationError as err:
-            return Response({'error': err.get_full_details()}, status=403)
+            return Response({'detail': err.get_full_details()}, status=403)
 
         if reservation.status == ReservationStatus.CONFIRMED:
             logger.debug(
@@ -99,7 +99,7 @@ class ReservationView(viewsets.ModelViewSet):
                 reservation=reservation, customer=request.user
             )
         except ValidationError as err:
-            return Response({'error': err.get_full_details()}, status=403)
+            return Response({'detail': err.get_full_details()}, status=403)
 
         if reservation.status == ReservationStatus.CONFIRMED:
             logger.debug(
@@ -115,7 +115,7 @@ class ReservationView(viewsets.ModelViewSet):
                 reservation=reservation, customer=request.user
             )
         except ValidationError as err:
-            return Response({'error': err.get_full_details()}, status=403)
+            return Response({'detail': err.get_full_details()}, status=403)
 
         if reservation.status == ReservationStatus.CONFIRMED:
             logger.debug(f"clearing cache for date {reservation.date}")
@@ -127,7 +127,8 @@ class ReservationView(viewsets.ModelViewSet):
     post=extend_schema(
         summary="예약 확정",
         description="예약을 확정합니다. 어드민만 사용할 수 있습니다.",
-        responses={200: ReservationSerializer})
+        request=None,
+    )
 )
 class ReservationConfirmView(generics.GenericAPIView):
     """
@@ -135,7 +136,7 @@ class ReservationConfirmView(generics.GenericAPIView):
     """
     queryset = Reservation.objects.all()
     permission_classes = [permissions.IsAdminUser]
-    serializer_class = ReservationSerializer
+    serializer_class = ReservationConfirmSerializer
 
     def post(self, request: Request, pk: UUID) -> Response:
         reservation = self.get_object()
@@ -199,7 +200,7 @@ class ReservationAvailableSlotsView(generics.GenericAPIView):
         try:
             date = self.validate_date_param(request.query_params.get('date'))
         except ValidationError as err:
-            return Response({'error': err.get_full_details()}, status=400)
+            return Response({'detail': err.get_full_details()}, status=400)
 
         cache_key = f"available_slots:{date}"
         cached_slots = cache.get(cache_key)
@@ -218,7 +219,8 @@ class ReservationAvailableSlotsView(generics.GenericAPIView):
                     slot['remaining'] = max(
                         0, slot['remaining'] - reservation.num_of_participants)
 
-        cache.set(cache_key, ReservationSlotSerializer(
-            slots, many=True).data, timeout=60*60)
+        serialized_slots = ReservationSlotSerializer(slots, many=True).data
 
-        return Response(ReservationSlotSerializer(slots, many=True).data, status=200)
+        cache.set(cache_key, serialized_slots, timeout=60*60)
+
+        return Response(serialized_slots, status=200)

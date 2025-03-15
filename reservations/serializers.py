@@ -53,6 +53,17 @@ class ReservationSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class ReservationConfirmSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(
+        source='get_status_display', read_only=True)
+
+    class Meta:
+        model = Reservation
+        fields = "__all__"
+        read_only_fields = ['id', 'title', 'date', 'start_time',
+                            'end_time', 'num_of_participants', 'status', 'customer']
+
+
 class ReservationSlotSerializer(serializers.Serializer):
     """
     슬롯 정보를 직렬화하는 Serializer

@@ -22,3 +22,20 @@ fi
 
 python manage.py migrate
 python manage.py createsuperuser --noinput --company_name=grepp
+python manage.py shell -c "
+from customers.models import Customer;
+
+try:
+    customer = Customer.objects.create(company_name='programmers')
+    customer.set_password('programmers123')
+    customer.save()
+except:
+    print('programmers customer already exists')
+
+try:
+    customer = Customer.objects.create(company_name='monito')
+    customer.set_password('monito123')
+    customer.save()
+except:
+    print('monito customer already exists')
+"

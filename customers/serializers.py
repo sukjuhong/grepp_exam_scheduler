@@ -6,7 +6,7 @@ from customers.models import Customer
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField()
     last_login = serializers.DateTimeField(read_only=True)
 
     class Meta:
@@ -15,4 +15,4 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class CustomerChangePasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField()
