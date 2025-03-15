@@ -146,9 +146,8 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Exam Scheduler API',
-    'DESCRIPTION': 'API for Exam Scheduler',
+    'TITLE': '시험 일정 관리 API',
+    'DESCRIPTION': '기업 고객이 채용 시험 일정을 예약하기 위한 API입니다.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    # OTHER SETTINGS
 }

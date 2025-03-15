@@ -4,7 +4,7 @@ from rest_framework import serializers
 from reservations.models import RESERVATION_NUM_OF_PARTICIPANTS_LIMIT, Reservation
 
 
-def is_date_within_three_to_fifteen_days(date: datetime.time) -> bool:
+def is_date_within_three_to_fifteen_days_from_today(date: datetime.time) -> bool:
     return (
         date >= (datetime.datetime.now() + datetime.timedelta(days=3)).date() and
         date <= (datetime.datetime.now() + datetime.timedelta(days=15)).date()
@@ -33,8 +33,9 @@ class ReservationSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'status']
 
     def validate(self, attrs):
-        if is_date_within_three_to_fifteen_days(attrs['date']) is False:
-            raise serializers.ValidationError('예약은 3일 이상 15일 이내로 가능합니다.')
+        if is_date_within_three_to_fifteen_days_from_today(attrs['date']) is False:
+            raise serializers.ValidationError(
+                '예약은 오늘을 기준으로 3일 후부터 15일 후까지 가능합니다.')
 
         if (
             attrs['start_time'] >= attrs['end_time'] or

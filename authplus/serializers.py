@@ -1,41 +1,43 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
+from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+
 from customers.serializers import CustomerSerializer
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     refresh = None
     access = None
-    refreshToken = serializers.CharField(write_only=True)
-    accessToken = serializers.CharField(read_only=True)
+    refresh_token = serializers.CharField(write_only=True)
+    access_token = serializers.CharField(read_only=True)
 
     class Meta:
-        fields = ('refreshToken', 'accessToken')
+        fields = ('refresh_token', 'access_token')
 
     def validate(self, attrs):
         attrs = {
-            'refresh': attrs.get('refreshToken')
+            'refresh': attrs.get('refresh_token')
         }
         data = super().validate(attrs)
         return {
-            'accessToken': data['access']
+            'access_token': data['access']
         }
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    refreshToken = serializers.CharField(read_only=True)
-    accessToken = serializers.CharField(read_only=True)
+    refresh_token = serializers.CharField(read_only=True)
+    access_token = serializers.CharField(read_only=True)
     customer = CustomerSerializer(read_only=True)
 
     class Meta:
-        fields = ('refreshToken', 'accessToken', 'customer')
+        fields = ('refresh_token', 'access_token', 'customer')
 
     def validate(self, attrs):
         super().validate(attrs)
         refresh = self.get_token(self.user)
         return {
-            'refreshToken': str(refresh),
-            'accessToken': str(refresh.access_token),
+            'refresh_token': str(refresh),
+            'access_token': str(refresh.access_token),
             'customer': CustomerSerializer(self.user).data
         }

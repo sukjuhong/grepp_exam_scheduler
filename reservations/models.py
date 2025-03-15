@@ -20,7 +20,7 @@ class Reservation(models.Model):
     end_time = models.TimeField()
     customer = models.ForeignKey(
         'customers.Customer', on_delete=models.CASCADE)
-    num_of_participants = models.IntegerField()
+    num_of_participants = models.PositiveIntegerField()
     status = models.CharField(
         max_length=10,
         choices=ReservationStatus.choices,
