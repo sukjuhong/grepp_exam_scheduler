@@ -13,7 +13,7 @@ class AuthAPITestCase(APITestCase):
 
     def test_login(self):
         """
-        올바른 회사명과 비밀번호으로 로그인이 가능한지 테스트합니다.
+        올바른 회사명과 비밀번호으로 로그인이 가능한지 확인
         """
         url = reverse('token_obtain_pair')
         response = self.client.post(url, {
@@ -28,7 +28,7 @@ class AuthAPITestCase(APITestCase):
 
     def test_refresh_token(self):
         """
-        리프레쉬 토큰을 사용하여 엑세스 토큰을 갱신할 수 있는지 테스트합니다.
+        리프레쉬 토큰을 사용하여 엑세스 토큰을 갱신할 수 있는지 확인
         """
         url = reverse('token_obtain_pair')
         response = self.client.post(url, {

@@ -18,7 +18,7 @@ class CustomerAPITestCase(APITestCase):
 
     def test_create_account(self):
         """
-        회원가입을 성공적으로 진행하는 경우
+        올바른 회사명과 비밀번호로 회원가입이 가능한지 확인
         """
         url = reverse('customers')
         data = {
@@ -36,7 +36,7 @@ class CustomerAPITestCase(APITestCase):
 
     def test_failed_create_account_with_existed_company_name(self):
         """
-        이미 존재하는 회사명으로 회원가입을 시도하는 경우
+        이미 존재하는 회사명으로 회원가입을 시도하는 경우 실패하는지 확인
         """
         url = reverse('customers')
         data = {
@@ -53,7 +53,7 @@ class CustomerAPITestCase(APITestCase):
 
     def test_failed_create_account_with_no_credentials(self):
         """
-        어드민이 아닌 사용자가 고객 등록을 시도하는 경우
+        어드민이 아닌 사용자가 회원가입을 시도하는 경우 실패하는지 확인
         """
         url = reverse('customers')
         data = {
@@ -70,7 +70,7 @@ class CustomerAPITestCase(APITestCase):
 
     def test_get_customer_list(self):
         """
-        고객 리스트를 조회하는 경우
+        고객 목록이 조회 가능한지 확인
         """
         url = reverse('customers')
 
@@ -83,7 +83,7 @@ class CustomerAPITestCase(APITestCase):
 
     def test_patch_customer(self):
         """
-        고객 정보를 수정하는 경우
+        고객 정보 수정이 가능한지 확인
         """
         url = reverse('customer-detail', args=[self.normal_customer.id])
         data = {
@@ -99,7 +99,7 @@ class CustomerAPITestCase(APITestCase):
 
     def test_delete_customer(self):
         """
-        고객 정보를 삭제하는 경우
+        고객 정보 삭제가 가능한지 확인
         """
         url = reverse('customer-detail', args=[self.normal_customer.id])
 

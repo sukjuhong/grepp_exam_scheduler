@@ -14,4 +14,7 @@ urlpatterns = [
         'patch': 'partial_update',
         'delete': 'destroy'
     }), name='customer-detail'),
+    path('<int:pk>/change-password/', CustomerViewSet.as_view({
+        'post': 'change_password'
+    }), name='customer-change-password'),
 ]
