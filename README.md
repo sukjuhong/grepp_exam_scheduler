@@ -37,7 +37,7 @@
 
 ```sh
 git clone https://github.com/sukjuhong/grepp_exam_scheduler.git
-cd grepp_example_scheduler
+cd grepp_exam_scheduler
 ```
 
 2. VS Code에서 프로젝트를 엽니다.
