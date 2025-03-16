@@ -1,0 +1,780 @@
+openapi: 3.0.3
+info:
+  title: 시험 일정 관리 API
+  version: 1.0.0
+  description: 기업 고객이 채용 시험 일정을 예약하기 위한 API입니다.
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: 회사명과 비밀번호로 로그인합니다. </br> 로그인 성공 시 엑세스 토큰과 리프레쉬 토큰, 고객 정보를 반환합니다.
+      summary: 로그인
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomTokenObtainPair'
+          description: ''
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: 리프레쉬 토큰을 사용하여 엑세스 토큰을 갱신합니다. </br> 갱신 성공 시 엑세스 토큰을 반환합니다.
+      summary: 토큰 갱신
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomTokenRefresh'
+          description: ''
+  /api/customers/:
+    get:
+      operationId: customers_list
+      description: 페이지네이션 처리된 고객 목록을 조회합니다. </br> 어드민 권한이 필요합니다.
+      summary: 고객 목록 조회
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - customers
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerList'
+          description: ''
+    post:
+      operationId: customers_create
+      description: 새로운 고객을 생성합니다. </br> 어드민 권한이 필요합니다.
+      summary: 고객 생성
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/customers/{id}/:
+    get:
+      operationId: customers_retrieve
+      description: 고객 ID로 고객 정보를 조회합니다. </br> 어드민 권한이 필요합니다.
+      summary: 단일 고객 조회
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - customers
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    put:
+      operationId: customers_update
+      description: 고객 정보를 수정합니다. </br> 어드민 권한이 필요합니다.
+      summary: 고객 수정
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    patch:
+      operationId: customers_partial_update
+      description: 고객 정보를 일부 수정합니다. </br> 어드민 권한이 필요합니다.
+      summary: 고객 일부 수정
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    delete:
+      operationId: customers_destroy
+      description: 고객 정보를 삭제합니다. </br> 어드민 권한이 필요합니다.
+      summary: 고객 삭제
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - customers
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/customers/{id}/change-password/:
+    post:
+      operationId: customers_change_password_create
+      description: 고객의 비밀번호를 변경합니다. </br> 어드민 권한이 필요합니다.
+      summary: 고객 비밀번호 변경
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomerChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomerChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reservations/:
+    get:
+      operationId: reservations_list
+      description: 페이지네이션 처리된 예약 목록을 조회합니다. </br>             어드민은 모든 예약을 볼 수 있고,
+        고객은 자신의 예약만 볼 수 있습니다.
+      summary: 예약 목록 조회
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - reservations
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReservationList'
+          description: ''
+    post:
+      operationId: reservations_create
+      description: 새로운 예약을 생성합니다. </br>             예약은 오늘을 기준으로 3일 후부터 15일 후까지 가능합니다.
+        </br>             예약은 1시간 단위이며, 그렙의 대응 가능 시간인 9시부터 18시까지 예약이 가능합니다. </br>             동
+        시간에 50000명이 수용 가능하므로,                 예약 가능한 인원 수를 초과하면 예약할 수 없습니다.
+      summary: 예약 생성
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+  /api/reservations/{id}/:
+    get:
+      operationId: reservations_retrieve
+      description: 예약 ID로 예약 정보를 조회합니다. </br>             어드민은 모든 예약을 볼 수 있고, 고객은
+        자신의 예약만 볼 수 있습니다.
+      summary: 단일 예약 조회
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+    put:
+      operationId: reservations_update
+      description: 예약 정보를 수정합니다. </br>             어드민은 모든 예약을 수정할 수 있고, 고객은 자신의 예약만
+        수정할 수 있습니다. </br>             고객은 확정된 예약을 수정할 수 없습니다.
+      summary: 예약 수정
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Reservation'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+    patch:
+      operationId: reservations_partial_update
+      description: 예약 정보를 일부 수정합니다. </br>             어드민은 모든 예약을 수정할 수 있고, 고객은 자신의
+        예약만 수정할 수 있습니다. </br>             고객은 확정된 예약을 수정할 수 없습니다.
+      summary: 예약 일부 수정
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReservation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReservation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReservation'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+    delete:
+      operationId: reservations_destroy
+      description: 예약 정보를 삭제합니다. </br>             어드민은 모든 예약을 삭제할 수 있고, 고객은 자신의 예약만
+        삭제할 수 있습니다. </br>             고객은 확정된 예약을 삭제할 수 없습니다.
+      summary: 예약 삭제
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reservations/{id}/confirm/:
+    post:
+      operationId: reservations_confirm_create
+      description: 예약을 확정합니다. 어드민만 사용할 수 있습니다.
+      summary: 예약 확정
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationConfirm'
+          description: ''
+  /api/reservations/available-slots/:
+    get:
+      operationId: reservations_available_slots_list
+      description: 특정 날짜의 예약 가능한 시간 및 인원을 조회합니다. </br>             날짜는 오늘을 기준으로 3일
+        후부터 15일 후까지 가능합니다.
+      summary: 예약 가능 시간 조회
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: '날짜 (예: ?date=YYYY-MM-DD)'
+      tags:
+      - reservations
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReservationSlot'
+          description: ''
+components:
+  schemas:
+    CustomTokenObtainPair:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          readOnly: true
+        access_token:
+          type: string
+          readOnly: true
+        customer:
+          allOf:
+          - $ref: '#/components/schemas/Customer'
+          readOnly: true
+        company_name:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - access_token
+      - company_name
+      - customer
+      - password
+      - refresh_token
+    CustomTokenRefresh:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          writeOnly: true
+        access_token:
+          type: string
+          readOnly: true
+      required:
+      - access_token
+      - refresh_token
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        password:
+          type: string
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+        company_name:
+          type: string
+          maxLength: 20
+        is_active:
+          type: boolean
+        is_admin:
+          type: boolean
+      required:
+      - company_name
+      - id
+      - last_login
+      - password
+    CustomerChangePassword:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+      - password
+    PaginatedCustomerList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+    PaginatedReservationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+    PatchedCustomer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        password:
+          type: string
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+        company_name:
+          type: string
+          maxLength: 20
+        is_active:
+          type: boolean
+        is_admin:
+          type: boolean
+    PatchedReservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 50
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        num_of_participants:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        customer:
+          type: string
+          readOnly: true
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 50
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        num_of_participants:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        customer:
+          type: string
+          readOnly: true
+      required:
+      - created_at
+      - customer
+      - date
+      - end_time
+      - id
+      - num_of_participants
+      - start_time
+      - status
+      - status_display
+      - title
+    ReservationConfirm:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+          readOnly: true
+        start_time:
+          type: string
+          format: time
+          readOnly: true
+        end_time:
+          type: string
+          format: time
+          readOnly: true
+        num_of_participants:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        customer:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - customer
+      - date
+      - end_time
+      - id
+      - num_of_participants
+      - start_time
+      - status
+      - status_display
+      - title
+      - updated_at
+    ReservationSlot:
+      type: object
+      description: 슬롯 정보를 직렬화하는 Serializer
+      properties:
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        remaining:
+          type: integer
+      required:
+      - end_time
+      - remaining
+      - start_time
+    StatusEnum:
+      enum:
+      - PENDING
+      - APPROVED
+      - REJECTED
+      type: string
+      description: |-
+        * `PENDING` - 확정 대기중
+        * `APPROVED` - 확정됨
+        * `REJECTED` - 취소됨
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
