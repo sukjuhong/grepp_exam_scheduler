@@ -10,7 +10,7 @@
 
 ## 구현 고려 사항
 
-> [!TIP]
+> [!NOTE]
 > 요구 사항 중 애매했던 부분이나 없던 부분을 정책적으로 결정한 내용을 서술합니다.
 
 - 고객의 생성 및 수정, 삭제는 관리자만이 가능합니다. (비밀번호 변경 또한 관리자를 통해 이뤄집니다.)
@@ -25,7 +25,7 @@
 
 이 프로젝트는 **VS Code의 Devcontainer** 기능을 사용하여 설정할 수 있습니다.
 
-> [!TIP]
+> [!NOTE]
 > 사전 요구사항
 > - [Visual Studio Code](https://code.visualstudio.com/) 설치  
 > - [Dev Containers 확장](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) 설치  
@@ -48,13 +48,14 @@ code .
 
 3. Devcontainer로 재열기
 
-`F1` (또는 `Ctrl + Shift + P`)를 눌러 Command Palette를 엽니다.
+- `F1` (또는 `Ctrl + Shift + P`)를 눌러 Command Palette를 엽니다.
 
-`Dev Containers: Rebuild Container` 를 선택합니다.
+- `Dev Containers: Rebuild Container` 를 선택합니다.
 
-이때, 개발 환경에 맞는 .env 생성 및 한 개의 슈퍼유저와 두 개의 테스트 고객 계정이 생성됩니다.
-슈퍼유저는 `company_name=grepp, password=grepp123`이며,
-두개의 테스트 고객은 `company_name=programmers, passowrd=programmers123`, `company_name=monito, password=monito123`입니다.
+> [!IMPORTANT]
+> 이때, 개발 환경에 맞는 .env 생성 및 한 개의 슈퍼유저와 두 개의 테스트 고객 계정이 생성됩니다. </br>
+> 슈퍼유저는 `company_name=grepp, password=grepp123`이며, </br>
+> 두개의 테스트 고객은 `company_name=programmers, passowrd=programmers123`, `company_name=monito, password=monito123`입니다.
 
 4. Django 실행하기
 
