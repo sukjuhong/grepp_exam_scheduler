@@ -36,7 +36,7 @@
 1. **이 저장소를 클론합니다.**  
 
 ```sh
-git clone https://github.com/sukjuhong/grepp_example_scheduler.git
+git clone https://github.com/sukjuhong/grepp_exam_scheduler.git
 cd grepp_example_scheduler
 ```
 
