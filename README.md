@@ -75,4 +75,4 @@ https://sukjuhong.github.io/grepp_exam_scheduler/
 
 redoc을 이용한 API 문서를 Github pages에 올려두었습니다.
 
-만약, 서버를 실행하셨다면 `/api/schema/redoc` 경로로 접근하여 같은 문서를 보실 수 있고, `/api/schema/swagger-ui` 경로로 접근하여 Swagger를 이용한 문서도 보실 수 있습니다.
+만약, 서버를 실행하셨다면 `/api/schema/redoc` 경로로 접근하여 같은 문서를 보실 수 있고, `/api/schema/swagger-ui` 경로로 접근하여 swagger를 이용한 문서도 보실 수 있습니다.
